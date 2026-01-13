@@ -5,6 +5,7 @@ description = "This is a machine learning--more specifically deep learning--libr
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
+license-files = ["LICENSE"]
 dependencies = [
     "numpy>=2.0"
 ]
