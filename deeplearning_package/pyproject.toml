@@ -4,7 +4,7 @@ version = "0.0.1"
 description = "This is a machine learning--more specifically deep learning--library from my independent study on deep learning. This library is both a result of my learning and a tool for AI development."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
     "numpy>=2.0"
