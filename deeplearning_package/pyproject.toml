@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rylan-berry/DeepLearningIndependentStudy/deeplearning_package"
+Homepage = "https://github.com/rylan-berry/DeepLearningIndependentStudy/tree/main/deeplearning_package"
 
 [build-system]
 requires = ["setuptools>=77.0.3"]
