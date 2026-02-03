@@ -1,4 +1,4 @@
-import autogradient
-import sequence
-import neural_net
-import optimizer
+from . import autogradient
+from . import sequence
+from . import neural_net
+from . import optimizer
