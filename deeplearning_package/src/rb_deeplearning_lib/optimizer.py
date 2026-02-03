@@ -1,5 +1,5 @@
 import numpy as np
-import autogradient
+from . import autogradient
 
 class Optimizer:
   def __init__(self):
