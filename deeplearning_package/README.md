@@ -23,4 +23,4 @@ Where epochs is the number of times you train through the data, the `\#\_t` mean
 
 ## Dependencies
 
-The auto gradient–which is used for back propagation–relies heavily on `**numpy**`.
+The auto gradient–which is used for back propagation–relies heavily on `numpy`.
