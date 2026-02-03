@@ -1,5 +1,6 @@
-from autogradient import Values
-from sequence import Sequence
+from .autogradient import Values
+from .sequence import Sequence
+from .optimizer import Optimizer
 
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
