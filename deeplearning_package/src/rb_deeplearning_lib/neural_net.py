@@ -1,4 +1,6 @@
 from autogradient import Values
+from sequence import Sequence
+
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
     self.weights = Values((rangeW[0]-rangeW[1])*np.random.rand(input,out)+rangeW[1])
