@@ -1,4 +1,5 @@
-from . import autogradient
-from . import sequence
-from . import neural_net
-from . import optimizer
+from .autogradient import *
+from .sequence import *
+from .optimizer import *
+from .neural_net import *
+
