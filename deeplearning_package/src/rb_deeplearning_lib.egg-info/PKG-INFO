@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: rb-deeplearning-lib
-Version: 0.0.2
+Version: 0.1.0
 Summary: This is a machine learning--more specifically deep learning--library from my independent study on deep learning. This library is both a result of my learning and a tool for AI development.
 License-Expression: MIT
 Project-URL: Homepage, https://github.com/rylan-berry/DeepLearningIndependentStudy/tree/main/deeplearning_package
