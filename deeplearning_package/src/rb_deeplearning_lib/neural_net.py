@@ -1,3 +1,6 @@
+import optimizer
+import sequence
+
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
     self.weights = Values((rangeW[0]-rangeW[1])*np.random.rand(input,out)+rangeW[1])
@@ -17,13 +20,7 @@ class Layer:
 
   def params(self):
     return self.weights, self.bias
-
-  def updateParams(self, l_rate):
-    self.weights.vals = self.weights.vals - l_rate * self.weights.grad
-    self.bias.vals = self.bias.vals - l_rate * self.bias.grad
-    self.weights.grad = self.weights.grad * 0
-    self.bias.grad = self.bias.grad * 0
-
+  
 class Dense:
   def __init__(self, layNum, inL, midL, outL, activ="_",f_activ="_",rangeW=(-0.1,0.1),rangeB=(-0.1,0.1)):
     if layNum < 1:
@@ -46,8 +43,6 @@ class Dense:
 
   def params(self):
       return self.seq.params()
-  def updateParams(self, l_rate):
-    self.seq.updateParams(l_rate)
 
 class Dropout:
   def __init__(self, size, chance):
@@ -81,8 +76,15 @@ def mse_loss(y_true, y_pred):
 
 
 class Model:
-  def __init__(self, blocks, regu = "", train = True, loss_fn=None, pen_fn = None):
+  def __init__(self, blocks, regu = "", train = True, loss_fn=None, pen_fn = None, optimizer=None):
     self.blocks = Sequence(blocks)
+
+    # Handle optimizer instantiation
+    if optimizer is None:
+        self.optimizer = Optimizer()
+    else:
+        self.optimizer = optimizer
+
     self.regu = regu
     self.inTrain = train
     self.train_loss = []
@@ -103,7 +105,7 @@ class Model:
     x_ = x if isinstance(x, Values) else Values(x)
     return self.blocks(x_)
 
-  def train(self, epochs, x_t, y_t, x_v, y_v, val_run=1, l_rate=0.01, _lambda=0.1, batch_size = None):
+  def train(self, epochs, x_t, y_t, x_v, y_v, l_rate=0.01, val_run=1, _lambda=0.1, batch_size = None):
     x_trn = x_t if isinstance(x_t, Values) else Values(x_t)
     y_trn = y_t if isinstance(y_t, Values) else Values(y_t)
     x_vl = x_v if isinstance(x_v, Values) else Values(x_v)
@@ -156,7 +158,10 @@ class Model:
         penalized_loss = self.pen_fn(current_loss,self,_lambda)
         penalized_loss.grad = np.ones_like(penalized_loss.vals)
         penalized_loss.backward()
-        self.blocks.updateParams(l_rate)
+        # Use the optimizer to step and clear gradients
+        # Retrieve parameters within the training loop before each optimization step
+        all_params = self.blocks.params()
+        self.optimizer.step(all_params, l_rate)
       print("\r", end="")
 
     for l in self.blocks.arr:
