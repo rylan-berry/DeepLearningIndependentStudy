@@ -1,6 +1,3 @@
-import numpy as np
-from . import autogradient
-
 class Optimizer:
   def __init__(self):
     pass
