@@ -1,4 +1,4 @@
-from autogradient import Values
+from .autogradient import Values
 import numpy as np
 class Optimizer:
   def __init__(self):
