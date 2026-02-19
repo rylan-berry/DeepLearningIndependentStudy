@@ -224,6 +224,17 @@ class Values:
     out._backward = backward
     return out
 
+  def max(self):
+    f_idx = np.argmax(self.vals)
+    coords = np.unravel_index(f_idx, self.vals.shape)
+    out = Values(self.vals[coords])
+    def backward():
+      if self.grad_flag:
+        self.grad[coords] = self.grad[coords] + out.grad
+        self._backward()
+    out._backward = backward
+    return out
+
   def mean(self):
     out = Values(np.mean(self.vals))
     def backward():
@@ -244,15 +255,31 @@ class Values:
     saved_item = item
     def backward():
         if self.grad_flag:
-            temp_grad = np.zeros_like(self.vals)
-            temp_grad[saved_item] = out.grad
+            self.grad[saved_item] = self.grad[saved_item] + out.grad
             self._backward()
     out._backward = backward
     return out
 
-  def backward(self):
+  def _backward(self):
     self.grad = np.ones_like(self.vals)
     self._backward()
+
+  def pad(self, padding):
+    if len(padding) != len(self.vals.shape):
+      print("ERROR: padding size does not match the dims")
+      return None
+    out = Values(np.pad(self.vals, padding, mode='constant'))
+    def backwards():
+      if self.grad_flag:
+      #unpad code borrowed from stackoverflow.com/questions/24806174
+        slices = []
+        for c in padding:
+          e = None if c[1] == 0 else -c[1]
+          slices.append(slice(c[0], e))
+        self.grad = self.grad + out.grad[tuple(slices)]
+        self._backward()
+    out._backward = backward
+    return out
 
   def __getattr__(self, name):
     if name == "_":
