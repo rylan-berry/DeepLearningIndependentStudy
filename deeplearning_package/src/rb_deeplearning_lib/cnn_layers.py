@@ -33,7 +33,7 @@ class Convo2D:
             pad_bottom = total_padding_h - pad_top
             pad_left = total_padding_w // 2
             pad_right = total_padding_w - pad_left
-        elif padding != 'valid':
+        elif self.padding != 'valid':
             print("ERROR: Padding method does not exist")
             return None
 
@@ -80,7 +80,7 @@ class MaxPooling(Pooling):
         for i in range(output_height):
             for j in range(output_width):
                 window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-                out[i][j] = np.max(window)
+                out[i,j] = window.max()
         return out
 
 class AvgPooling(Pooling):
@@ -94,5 +94,5 @@ class AvgPooling(Pooling):
         for i in range(output_height):
             for j in range(output_width):
                 window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-                out[i][j] = window.mean()
+                out[i,j] = window.mean()
         return out

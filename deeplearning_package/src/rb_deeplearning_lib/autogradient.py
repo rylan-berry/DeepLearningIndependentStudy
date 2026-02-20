@@ -260,16 +260,47 @@ class Values:
     out._backward = backward
     return out
 
+    def __setitem__(self, key, value):
+    value_is_values = isinstance(value, Values)
+
+    # Perform the forward assignment
+    if value_is_values:
+        self.vals[key] = value.vals
+    else:
+        self.vals[key] = value
+
+    # --- Backward logic for __setitem__ ---
+    if self.grad_flag and value_is_values and value.grad_flag:
+        # Capture the current backward function of 'self'
+        old_self_backward = self._backward
+        # Capture references to 'value' and 'key' for the closure
+        saved_value = value
+        saved_key = key
+
+        def new_self_backward():
+            # When 'self' receives its gradient (self.grad), propagate the relevant part to 'saved_value'.
+            grad_to_propagate = self.grad[saved_key]
+            saved_value.grad = saved_value.grad + Values._broadcast_grad(grad_to_propagate, saved_value.vals.shape)
+            saved_value._backward() # Chain backward for the assigned value
+
+            # Call the original backward for 'self'
+            old_self_backward()
+
+        # Replace 'self's backward function with the new one
+        self._backward = new_self_backward
+
+
   def backward(self):
     self.grad = np.ones_like(self.vals)
     self._backward()
 
+  
   def pad(self, padding):
     if len(padding) != len(self.vals.shape):
       print("ERROR: padding size does not match the dims")
       return None
     out = Values(np.pad(self.vals, padding, mode='constant'))
-    def backwards():
+    def backward():
       if self.grad_flag:
       #unpad code borrowed from stackoverflow.com/questions/24806174
         slices = []
