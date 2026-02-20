@@ -78,8 +78,8 @@ class MaxPooling(Pooling):
         out = np.zeros((output_height, output_width))
         for i in range(output_height):
             for j in range(output_width):
-            window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-            out[i][j] = np.max(window)
+                window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+                out[i][j] = np.max(window)
         return out
 
 class AvgPooling(Pooling):
@@ -92,6 +92,6 @@ class AvgPooling(Pooling):
         out = Values(np.zeros((output_height, output_width)))
         for i in range(output_height):
             for j in range(output_width):
-            window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-            out[i][j] = window.mean()
+                window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+                out[i][j] = window.mean()
         return out

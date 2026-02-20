@@ -6,12 +6,13 @@ This package is designed to be similar to the PyTorch system of a building block
 
 ## Modules
 
-This project has four main modules:
+This project has five main modules:
 
 * `autogradient.py`  
 * `sequence.py`
 * `optimizer.py`
 * `neural_net.py`
+* `cnn_layers.py`
 
 All of which are automatically part of the initial import of the package.
 
@@ -21,7 +22,7 @@ All of which are automatically part of the initial import of the package.
 
 This module forms the core of the automatic differentiation system, enabling the computation of gradients for complex mathematical operations. It introduces the `Values` class, which is central to tracking computational history.
 
-*   **`Values` Class**: Encapsulates numerical values (`vals`) and their corresponding gradients (`grad`). It supports a wide array of arithmetic and mathematical operations (e.g., `+`, `-`, `*`, `/`, `@`, `exp`, `log`, `relu`, `abs`, `sum`, `softmax`, `mean`, `__pow__`, `__getitem__`, `T` for transpose). Each operation automatically builds a computational graph by defining a `_backward` function. A static method, `_broadcast_grad`, meticulously handles gradient broadcasting to correctly match original tensor shapes. The `backward()` method then leverages this graph to efficiently compute and propagate gradients.
+*   **`Values` Class**: Encapsulates numerical values (`vals`) and their corresponding gradients (`grad`). It supports a wide array of arithmetic and mathematical operations (e.g., `+`, `-`, `*`, `/`, `@`, `exp`, `log`, `relu`, `abs`, `sum`, `softmax`, `mean`, `__pow__`, `__getitem__`, `pad`, `_` (identity), `T` (transpose)). The `__getattr__` method handles properties like `T` (transpose) and provides a pass-through for underlying numpy array attributes. Each operation automatically builds a computational graph by defining a `_backward` function. A static method, `_broadcast_grad`, meticulously handles gradient broadcasting to correctly match original tensor shapes. The `backward()` method then leverages this graph to efficiently compute and propagate gradients.
 
 ### `sequence.py`
 
@@ -41,6 +42,15 @@ The `optimizer.py` module implements various algorithms used to update neural ne
     *   `Optim_RMSPropclass`: Similar to AdaGrad, RMSProp uses a moving average of squared gradients to normalize the learning rate, helping to mitigate issues with vanishing or exploding gradients.
     *   `Optim_Adam`: A powerful and popular optimizer that combines elements of both Momentum and RMSProp, utilizing moving averages of both the gradients and the squared gradients to provide efficient and robust parameter updates.
 
+### `cnn_layers.py`
+
+This module introduces fundamental building blocks for Convolutional Neural Networks (CNNs), including convolutional layers and pooling operations.
+
+*   **`Convo2D` Class**: Implements a 2D convolutional layer. It takes a `kernel_matrix` as input and supports different `padding` strategies ('valid' and 'same') and `stride` values. The `__call__` method performs the convolution operation, handling padding and strides to produce the output feature map. The `params()` method returns the kernel for optimization.
+*   **`Pooling` Base Class**: An abstract base class for pooling operations, defining common attributes like `pool_size` and `stride`.
+*   **`MaxPooling` Class**: A subclass of `Pooling` that implements max pooling. It extracts windows from the input and returns the maximum value within each window, reducing the spatial dimensions of the input.
+*   **`AvgPooling` Class**: A subclass of `Pooling` that implements average pooling. Similar to max pooling, it extracts windows but returns the average value within each window, providing a smoothed down-sampled representation.
+
 ### `neural_net.py`
 
 This module defines the fundamental building blocks for constructing neural networks, including various layers, network architectures, regularization techniques, loss functions, and a comprehensive model training framework.
@@ -59,8 +69,8 @@ This module defines the fundamental building blocks for constructing neural netw
 ## Making and Running a Model
 
 When creating a model, use the Model class, which runs most of the functions included in the package itself. The first argument is a list of layers or blocks, each element is the steps in the network. These steps can be a Dense, Layer, or Dropout blocks (more will be made), a Dense is just multiple layers stacked back to back.   
-Training a model is done through: `def train(epochs, x_t, y_t, x_v, y_v, val_run=1, l_rate=0.01, _lambda=0.1, batch_size = None) ` 
-Where epochs is the number of times you train through the data, the `#_t` means training data and `#_v` means validation data, `x` means input, `y` means output, `val_run` is the epochs between when you want to test the validation data, `l_rate` is the learn rate, `_lambda` is a hyperparameter that determines the strength of the penalty functions, and `batch_size` determines how large batches will be (if the batch size isn’t a multiple of the data size then it will still run, there is just a smaller batch then the others). 
+Training a model is done through: `def train(epochs, x_t, y_t, x_v, y_v, val_run=1, l_rate=0.01, _lambda=0.1, batch_size = None) `
+Where epochs is the number of times you train through the data, the `#_t` means training data and `#_v` means validation data, `x` means input, `y` means output, `val_run` is the epochs between when you want to test the validation data, `l_rate` is the learn rate, `_lambda` is a hyperparameter that determines the strength of the penalty functions, and `batch_size` determines how large batches will be (if the batch size isn’t a multiple of the data size then it will still run, there is just a smaller batch then the others).
 
 ## Dependencies
 
