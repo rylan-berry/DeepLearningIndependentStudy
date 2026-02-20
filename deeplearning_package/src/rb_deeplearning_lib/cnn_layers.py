@@ -12,7 +12,7 @@ class Convo2D:
 
     def __call__(self, x):
         input_height, input_width = x.shape
-        kernel_height, kernel_width = kernel_matrix.shape
+        kernel_height, kernel_width = self.kernel.shape
 
         pad_top, pad_bottom, pad_left, pad_right = 0, 0, 0, 0
 
@@ -55,14 +55,14 @@ class Convo2D:
                                     j * stride : j * stride + kernel_width]
 
                 # Perform element-wise multiplication and sum (dot product)
-                output_matrix[i, j] = (window * kernel_matrix).sum()
+                output_matrix[i, j] = (window * self.kernel).sum()
 
         return output_matrix
             
 
 class Pooling:
     def __init__(self, pool_size, stride=1):
-        self.size = pool_sizes
+        self.size = pool_size
         self.stride = stride
     
     def __call__(self, x):
@@ -71,7 +71,7 @@ class Pooling:
 class MaxPooling(Pooling):
     def __call__(self, x):
         in_h, in_w = x.shape
-        p_h, p_w = self.pool_sizes
+        p_h, p_w = self.size
         stride = self.stride
         output_height = (in_h - p_h) // stride + 1
         output_width = (in_w - p_w) // stride + 1
@@ -85,7 +85,7 @@ class MaxPooling(Pooling):
 class AvgPooling(Pooling):
     def __call__(self, x):
         in_h, in_w = x.shape
-        p_h, p_w = self.pool_size
+        p_h, p_w = self.size
         stride = self.stride
         output_height = (in_h - p_h) // stride + 1
         output_width = (in_w - p_w) // stride + 1
