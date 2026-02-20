@@ -1,5 +1,6 @@
 from .autogradient import Values
 from math import ceil
+import numpy as np
 
 class Convo2D:
     def __init__(self, kernel_matrix, padding='valid', stride=1):
@@ -16,7 +17,7 @@ class Convo2D:
 
         pad_top, pad_bottom, pad_left, pad_right = 0, 0, 0, 0
 
-        if padding == 'same':
+        if self.padding == 'same':
             # Calculate output dimensions based on 'same' padding logic:
             # output_dim = ceil(input_dim / stride)
             # This is a common interpretation in frameworks like TensorFlow/Keras
@@ -75,7 +76,7 @@ class MaxPooling(Pooling):
         stride = self.stride
         output_height = (in_h - p_h) // stride + 1
         output_width = (in_w - p_w) // stride + 1
-        out = np.zeros((output_height, output_width))
+        out = Values(np.zeros((output_height, output_width)))
         for i in range(output_height):
             for j in range(output_width):
                 window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]

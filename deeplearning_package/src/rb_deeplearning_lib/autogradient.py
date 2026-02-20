@@ -260,7 +260,7 @@ class Values:
     out._backward = backward
     return out
 
-  def _backward(self):
+  def backward(self):
     self.grad = np.ones_like(self.vals)
     self._backward()
 
