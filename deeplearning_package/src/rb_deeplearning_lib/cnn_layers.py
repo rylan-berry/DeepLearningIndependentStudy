@@ -3,7 +3,7 @@ from math import ceil
 
 class Convo2D:
     def __init__(self, kernel_matrix, padding='valid', stride=1):
-        self.kernel = kernel_matrix
+        self.kernel = kernel_matrix if isinstance(kernel_matrix, Values) else Values(kernel_matrix)
         self.padding = padding
         self.stride = stride
     
