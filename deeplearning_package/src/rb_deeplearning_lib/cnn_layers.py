@@ -6,6 +6,9 @@ class Convo2D:
         self.kernel = kernel_matrix
         self.padding = padding
         self.stride = stride
+    
+    def params(self):
+        return self.kernel
 
     def __call__(self, x):
         input_height, input_width = x.shape
@@ -57,3 +60,38 @@ class Convo2D:
         return output_matrix
             
 
+class Pooling:
+    def __init__(self, pool_size, stride=1):
+        self.size = pool_sizes
+        self.stride = stride
+    
+    def __call__(self, x):
+        return x
+
+class MaxPooling(Pooling):
+    def __call__(self, x):
+        in_h, in_w = x.shape
+        p_h, p_w = self.pool_sizes
+        stride = self.stride
+        output_height = (in_h - p_h) // stride + 1
+        output_width = (in_w - p_w) // stride + 1
+        out = np.zeros((output_height, output_width))
+        for i in range(output_height):
+            for j in range(output_width):
+            window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+            out[i][j] = np.max(window)
+        return out
+
+class AvgPooling(Pooling):
+    def __call__(self, x):
+        in_h, in_w = x.shape
+        p_h, p_w = self.pool_size
+        stride = self.stride
+        output_height = (in_h - p_h) // stride + 1
+        output_width = (in_w - p_w) // stride + 1
+        out = Values(np.zeros((output_height, output_width)))
+        for i in range(output_height):
+            for j in range(output_width):
+            window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+            out[i][j] = window.mean()
+        return out
