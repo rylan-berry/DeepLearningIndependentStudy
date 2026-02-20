@@ -260,7 +260,7 @@ class Values:
     out._backward = backward
     return out
 
-    def __setitem__(self, key, value):
+  def __setitem__(self, key, value):
     value_is_values = isinstance(value, Values)
 
     # Perform the forward assignment
