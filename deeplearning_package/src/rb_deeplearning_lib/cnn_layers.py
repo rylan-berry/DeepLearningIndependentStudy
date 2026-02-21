@@ -12,6 +12,7 @@ class Convo2D:
         return self.kernel
 
     def __call__(self, x):
+        self.kernel = x if isinstance(x, Values) else Values(x)
         input_height, input_width = x.shape
         kernel_height, kernel_width = self.kernel.shape
 
