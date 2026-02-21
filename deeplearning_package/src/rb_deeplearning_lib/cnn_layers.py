@@ -12,10 +12,10 @@ class Convo2D:
         return self.kernel
 
     def __call__(self, x):
-        self.kernel = x if isinstance(x, Values) else Values(x)
+        x = x if isinstance(x, Values) else Values(x)
         input_height, input_width = x.shape
         kernel_height, kernel_width = self.kernel.shape
-
+        stride = self.stride
         pad_top, pad_bottom, pad_left, pad_right = 0, 0, 0, 0
 
         if self.padding == 'same':
@@ -68,10 +68,12 @@ class Pooling:
         self.stride = stride
     
     def __call__(self, x):
+        x = x if isinstance(x, Values) else Values(x)
         return x
 
 class MaxPooling(Pooling):
     def __call__(self, x):
+        x = x if isinstance(x, Values) else Values(x)
         in_h, in_w = x.shape
         p_h, p_w = self.size
         stride = self.stride
@@ -86,6 +88,7 @@ class MaxPooling(Pooling):
 
 class AvgPooling(Pooling):
     def __call__(self, x):
+        x = x if isinstance(x, Values) else Values(x)
         in_h, in_w = x.shape
         p_h, p_w = self.size
         stride = self.stride
