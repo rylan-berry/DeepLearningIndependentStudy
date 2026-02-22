@@ -11,9 +11,16 @@ class Convo2D:
     def params(self):
         return self.kernel
 
-    def __call__(self, x):
-        x = x if isinstance(x, Values) else Values(x)
-        input_height, input_width = x.shape
+    def __call__(self, _x):
+        _x = _x if isinstance(_x, Values) else Values(_x)
+        x = []
+        if len(_x.shape) == 2:
+          x = Values(np.zeros((1,_x.shape[0],_x.shape[1])))
+          x[0,:,:] = _x
+        else:
+          x = _x
+        
+        x_len, input_height, input_width = x.shape
         kernel_height, kernel_width = self.kernel.shape
         stride = self.stride
         pad_top, pad_bottom, pad_left, pad_right = 0, 0, 0, 0
@@ -38,26 +45,26 @@ class Convo2D:
             print("ERROR: Padding method does not exist")
             return None
 
-        # Apply padding to the input matrix
-        padded_input = x.pad(((pad_top, pad_bottom), (pad_left, pad_right)))
+        # Apply padding to the input matrix. The 0,0 at the front is so to avoid making padding for the inputs row
+        padded_input = x.pad(((0,0),(pad_top, pad_bottom), (pad_left, pad_right)))
 
         # Calculate the actual output dimensions after padding and considering stride
         # Formula: (Padded_Input_Dimension - Kernel_Dimension) // Stride + 1
-        output_height = (padded_input.shape[0] - kernel_height) // stride + 1
-        output_width = (padded_input.shape[1] - kernel_width) // stride + 1
+        output_height = (padded_input.shape[1] - kernel_height) // stride + 1
+        output_width = (padded_input.shape[2] - kernel_width) // stride + 1
 
         # Initialize the output matrix with zeros
-        output_matrix = Values(np.zeros((output_height, output_width)))
+        output_matrix = Values(np.zeros((x_len, output_height, output_width)))
 
         # Perform the convolution operation
         for i in range(output_height):
             for j in range(output_width):
                 # Extract the current window (receptive field) from the padded input
-                window = padded_input[i * stride : i * stride + kernel_height,
+                window = padded_input[:,i * stride : i * stride + kernel_height,
                                     j * stride : j * stride + kernel_width]
 
                 # Perform element-wise multiplication and sum (dot product)
-                output_matrix[i, j] = (window * self.kernel).sum()
+                output_matrix[:, i, j] = (window * self.kernel).sum()
 
         return output_matrix
             
@@ -72,31 +79,45 @@ class Pooling:
         return x
 
 class MaxPooling(Pooling):
-    def __call__(self, x):
-        x = x if isinstance(x, Values) else Values(x)
-        in_h, in_w = x.shape
+    def __call__(self, _x):
+        _x = _x if isinstance(_x, Values) else Values(_x)
+        x = []
+        if len(_x.shape) == 2:
+          x = Values(np.zeros((1,_x.shape[0],_x.shape[1])))
+          x[0,:,:] = _x
+        else:
+          x = _x
+
+        x_len, in_h, in_w = x.shape
         p_h, p_w = self.size
         stride = self.stride
         output_height = (in_h - p_h) // stride + 1
         output_width = (in_w - p_w) // stride + 1
-        out = Values(np.zeros((output_height, output_width)))
+        out = Values(np.zeros((x_len, output_height, output_width)))
         for i in range(output_height):
             for j in range(output_width):
-                window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-                out[i,j] = window.max()
+                window = x[:,i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+                out[:,i,j] = window.max()
         return out
 
 class AvgPooling(Pooling):
-    def __call__(self, x):
-        x = x if isinstance(x, Values) else Values(x)
-        in_h, in_w = x.shape
+    def __call__(self, _x):
+        _x = _x if isinstance(_x, Values) else Values(_x)
+        x = []
+        if len(_x.shape) == 2:
+          x = Values(np.zeros((1,_x.shape[0],_x.shape[1])))
+          x[0,:,:] = _x
+        else:
+          x = _x
+
+        x_len, in_h, in_w = x.shape
         p_h, p_w = self.size
         stride = self.stride
         output_height = (in_h - p_h) // stride + 1
         output_width = (in_w - p_w) // stride + 1
-        out = Values(np.zeros((output_height, output_width)))
+        out = Values(np.zeros((x_len, output_height, output_width)))
         for i in range(output_height):
             for j in range(output_width):
-                window = x[i*stride : i*stride+p_h, j*stride : j*stride+p_w]
-                out[i,j] = window.mean()
+                window = x[:,i*stride : i*stride+p_h, j*stride : j*stride+p_w]
+                out[:,i,j] = window.mean()
         return out
