@@ -1,3 +1,5 @@
+from .autogradient import Values
+
 class Sequence:
   def __init__(self, arr):
     self.arr = arr
@@ -24,5 +26,8 @@ class Sequence:
                     all_params.extend(p_group)
                 else:
                     all_params.append(p_group)
+        elif isinstance(layer_params, Values):
+          all_params.append(layer_params):
+        
 
     return all_params
