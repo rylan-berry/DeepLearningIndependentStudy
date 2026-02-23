@@ -27,7 +27,7 @@ class Sequence:
                 else:
                     all_params.append(p_group)
         elif isinstance(layer_params, Values):
-          all_params.append(layer_params):
+          all_params.append(layer_params)
         
 
     return all_params
