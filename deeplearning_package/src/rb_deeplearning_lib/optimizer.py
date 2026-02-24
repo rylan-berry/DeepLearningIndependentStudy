@@ -6,7 +6,7 @@ class Optimizer:
 
   def step(self, params, learning_rate):
     for p in params:
-      p.vals = p.vals - learning_rate * p.grad
+      p.vals = p.vals - learning_rate * p.grad.reshape(p.vals.shape)
       p.grad = np.zeros_like(p.grad)
 
 class Optim_SGD(Optimizer):
@@ -24,7 +24,7 @@ class Optim_SGD(Optimizer):
     else:
       l_rate = self.fin_l_rate
     for p in params:
-      p.vals = p.vals - l_rate * p.grad
+      p.vals = p.vals - l_rate * p.grad.reshape(p.vals.shape)
       p.grad = np.zeros_like(p.grad)
 
 class Optim_SGD_Momentum(Optimizer):
@@ -37,7 +37,7 @@ class Optim_SGD_Momentum(Optimizer):
     for p in params:
       if p not in self.v:
         v[p] = np.zeros_like(p.vals)
-      v[p] = self.beta*v[p] - learning_rate*p.grad
+      v[p] = self.beta*v[p] - learning_rate*p.grad.reshape(p.vals.shape)
       p.vals = p.vals + self.v[p]
       p.grad = np.zeros_like(p.grad)
     self.v = v
@@ -51,8 +51,8 @@ class Optim_AdaGrad(Optimizer):
     for p in params:
       if p not in self.r:
         self.r[p] = np.zeros_like(p.vals)
-      self.r[p] = self.r[p] + p.grad**2
-      p.vals = p.vals - l_rate * p.grad / (self.gamma + self.r[p]**0.5)
+      self.r[p] = self.r[p] + (p.grad.reshape(p.vals.shape))**2
+      p.vals = p.vals - l_rate * p.grad.reshape(p.vals.shape) / (self.gamma + self.r[p]**0.5)
       p.grad = np.zeros_like(p.grad)
 
 class Optim_RMSPropclass(Optimizer):
@@ -65,8 +65,8 @@ class Optim_RMSPropclass(Optimizer):
     for p in params:
       if p not in self.r:
         self.r[p] = np.zeros_like(p.vals)
-      self.r[p] = dr*self.r[p] + (1-dr)*p.grad**2
-      p.vals = p.vals - l_rate*p.grad/(self.gamma + self.r[p]**0.5)
+      self.r[p] = dr*self.r[p] + (1-dr)*(p.grad.reshape(p.vals.shape))**2
+      p.vals = p.vals - l_rate*(p.grad.reshape(p.vals.shape))/(self.gamma + self.r[p]**0.5)
       p.grad = np.zeros_like(p.grad)
 
 class Optim_Adam(Optimizer):
@@ -89,8 +89,8 @@ class Optim_Adam(Optimizer):
       if p not in self.s:
         self.s[p] = np.zeros_like(p.vals)
 
-      self.s[p] = beta1*self.s[p] + (1-beta1)*p.grad
-      self.r[p] = beta2*self.r[p] + (1-beta2)*p.grad**2
+      self.s[p] = beta1*self.s[p] + (1-beta1)*p.grad.reshape(p.vals.shape)
+      self.r[p] = beta2*self.r[p] + (1-beta2)*(p.grad.reshape(p.vals.shape))**2
 
       s_hat = self.s[p]/(1-beta1**t)
       r_hat = self.r[p]/(1-beta2**t)
