@@ -172,7 +172,17 @@ class Values:
         self._backward()
     out._backward = backward
     return out
+    
+  def tanh(self):
+  out = Values(np.tanh(self.vals))
 
+  def backward():
+     if self.grad_flag:
+        self.grad = self.grad + (1 - np.tanh(self.vals) ** 2) * Values._broadcast_grad(out.grad, self.vals.shape)
+        self._backward()
+  out._backward = backward
+  return out
+  
   def abs(self):
     out = Values(np.abs(self.vals))
     def backward():
