@@ -39,6 +39,16 @@ class Values:
 
     return grad_from_output # No broadcasting to sum over, or complex broadcasting not handled by this simple logic.
 
+  def reshape(self, size):
+  out = Values(self.vals.reshape(size))
+  def backward():
+    if self.grad_flag:
+      self.grad = self.grad + out.grad.reshape(self.vals.shape)
+      self._backward()
+  out._backward = backward
+  return out
+
+  
   def __repr__(self):
     return "vals: " + self.vals.__repr__() + "\ngrads: "+ self.grad.__repr__()
 
