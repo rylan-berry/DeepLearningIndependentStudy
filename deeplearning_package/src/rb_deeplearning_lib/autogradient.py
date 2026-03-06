@@ -55,10 +55,10 @@ class Values:
       for i, a in enumerate(axis):
         revert[a] = i
       
-    out = Values(self.vals.transpose(axis=axis))
+    out = Values(self.vals.transpose(axis))
     def backward():
       if self.grad_flag:
-        self.grad = self.grad + out.grad.transpose(axis=revert)
+        self.grad = self.grad + out.grad.transpose(revert)
         self._backward()
     out._backward = backward
     return out
