@@ -48,11 +48,13 @@ class Values:
     out._backward = backward
     return out
   
-  def transpose(self, axis):
-    revert = (0) * len(axis)
-    for i, a in enumerate(axis):
-      revert[a] = i
-    
+  def transpose(self, axis=None):
+    revert = None
+    if axis:
+      revert = (0) * len(axis)
+      for i, a in enumerate(axis):
+        revert[a] = i
+      
     out = Values(self.vals.transpose(axis=axis))
     def backward():
       if self.grad_flag:
