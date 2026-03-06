@@ -40,13 +40,27 @@ class Values:
     return grad_from_output # No broadcasting to sum over, or complex broadcasting not handled by this simple logic.
 
   def reshape(self, size):
-  out = Values(self.vals.reshape(size))
-  def backward():
-    if self.grad_flag:
-      self.grad = self.grad + out.grad.reshape(self.vals.shape)
-      self._backward()
-  out._backward = backward
-  return out
+    out = Values(self.vals.reshape(size))
+    def backward():
+      if self.grad_flag:
+        self.grad = self.grad + out.grad.reshape(self.vals.shape)
+        self._backward()
+    out._backward = backward
+    return out
+  
+  def transpose(self, axis):
+    revert = (0) * len(axis)
+    for i, a in enumerate(axis):
+      revert[a] = i
+    
+    out = Values(self.vals.transpose(axis=axis))
+    def backward():
+      if self.grad_flag:
+        self.grad = self.grad + out.grad.transpose(axis=revert)
+        self._backward()
+    out._backward = backward
+    return out
+
 
   
   def __repr__(self):
