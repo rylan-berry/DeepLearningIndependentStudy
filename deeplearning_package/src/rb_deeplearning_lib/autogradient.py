@@ -51,7 +51,7 @@ class Values:
   def transpose(self, axis=None):
     revert = None
     if axis:
-      revert = (0,) * len(axis)
+      revert = [0] * len(axis)
       for i, a in enumerate(axis):
         revert[a] = i
       
