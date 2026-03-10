@@ -1,4 +1,5 @@
 from .autogradient import Values
+import numpy as np
 
 class FullRNNLayer:
   def __init__(self, input_dim, hidden_dim, output_dim, rangeW=(0,1),rangeB=(0,1), activ="tanh", transpInput=False):
