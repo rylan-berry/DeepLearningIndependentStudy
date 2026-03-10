@@ -2,17 +2,18 @@
 
 ## Overview
 
-This package is designed to be similar to the PyTorch system of a building block system. Providing the functions that can be mixed, matched, and customized as pleased for any given model. This library is bare bones and only includes the few methods and ideas I learned about while studying *Deep Learning* by Ian Goodfellow et. al.. AI was used in the project, but it was used sparingly.
+This package is designed to be similar to the PyTorch system of a building block system, providing functions that can be mixed, matched, and customized for any given model. It implements core deep learning concepts including automatic differentiation, sequential modeling, and various layer types.
 
 ## Modules
 
-This project has five main modules:
+This project has six main modules:
 
 * `autogradient.py`  
 * `sequence.py`
 * `optimizer.py`
 * `neural_net.py`
 * `cnn_layers.py`
+* `rnn_layers.py`
 
 All of which are automatically part of the initial import of the package.
 
@@ -20,58 +21,42 @@ All of which are automatically part of the initial import of the package.
 
 ### `autogradient.py`
 
-This module forms the core of the automatic differentiation system, enabling the computation of gradients for complex mathematical operations. It introduces the `Values` class, which is central to tracking computational history.
+This module forms the core of the automatic differentiation system. It introduces the `Values` class, which tracks computational history to compute gradients.
 
-*   **`Values` Class**: Encapsulates numerical values (`vals`) and their corresponding gradients (`grad`). It supports a wide array of arithmetic and mathematical operations (e.g., `+`, `-`, `*`, `/`, `@`, `exp`, `log`, `relu`, `abs`, `sum`, `softmax`, `mean`, `__pow__`, `__getitem__`, `pad`, `_` (identity), `T` (transpose)). The `__getattr__` method handles properties like `T` (transpose) and provides a pass-through for underlying numpy array attributes. Each operation automatically builds a computational graph by defining a `_backward` function. A static method, `_broadcast_grad`, meticulously handles gradient broadcasting to correctly match original tensor shapes. The `backward()` method then leverages this graph to efficiently compute and propagate gradients.
+*   **`Values` Class**: Encapsulates numerical values (`vals`) and their corresponding gradients (`grad`). 
+*   **Broadcasting Support**: Includes a sophisticated `_broadcast_grad` static method that automatically handles gradient shape adjustments during backpropagation when operations involve broadcasted NumPy arrays (e.g., adding a bias vector to a matrix).
+*   **Operations**: Supports a wide array of operations including arithmetic (`+`, `-`, `*`, `/`, `@`, `**`), activation functions (`relu`, `tanh`, `softmax`), and tensor manipulations (`reshape`, `transpose`, `pad`, `sum`, `mean`, `max`, and slicing/indexing).
 
-### `sequence.py`
+### `rnn_layers.py` (New)
 
-This module provides a mechanism to combine multiple operations or layers into a single, cohesive sequential model.
+This module provides implementations for Recurrent Neural Networks, suitable for sequential data processing.
 
-*   **`Sequence` Class**: Designed to take a list of callable objects (such as `Layer`, `Dense`, or `Dropout` instances). Its `__call__` method ensures that input data is passed through each item in the sequence in the defined order. The `params()` method is crucial for model training, as it gathers all trainable parameters (weights and biases) from its constituent layers, making them accessible to optimizers.
-
-### `optimizer.py`
-
-The `optimizer.py` module implements various algorithms used to update neural network parameters based on their computed gradients, facilitating the learning process.
-
-*   **`Optimizer` Base Class**: Serves as the blueprint for all optimization algorithms, providing a `step` method that each specific optimizer overrides.
-*   **Subclasses**: The module includes several widely used optimizers:
-    *   `Optim_SGD`: Implements Stochastic Gradient Descent, with an optional learning rate scheduler that adjusts the rate over time.
-    *   `Optim_SGD_Momentum`: Extends SGD by incorporating momentum, which helps accelerate convergence by considering an exponentially weighted average of past gradients.
-    *   `Optim_AdaGrad`: An adaptive learning rate optimizer that adjusts the learning rate for each parameter individually based on the historical sum of its squared gradients.
-    *   `Optim_RMSPropclass`: Similar to AdaGrad, RMSProp uses a moving average of squared gradients to normalize the learning rate, helping to mitigate issues with vanishing or exploding gradients.
-    *   `Optim_Adam`: A powerful and popular optimizer that combines elements of both Momentum and RMSProp, utilizing moving averages of both the gradients and the squared gradients to provide efficient and robust parameter updates.
+*   **`RNNCell`**: The fundamental building block for recurrent layers, performing the basic hidden state update: $h_t = \text{activation}(W_{ih} x_t + b_{ih} + W_{hh} h_{t-1} + b_{hh})$.
+*   **`RNN` Layer**: A high-level wrapper that processes entire sequences, maintaining hidden states across time steps and supporting both many-to-many and many-to-one architectures.
 
 ### `cnn_layers.py`
 
-This module introduces fundamental building blocks for Convolutional Neural Networks (CNNs), including convolutional layers and pooling operations.
+Implements fundamental building blocks for Convolutional Neural Networks.
 
-*   **`Convo2D` Class**: Implements a 2D convolutional layer. It takes a `kernel_matrix` as input and supports different `padding` strategies ('valid' and 'same') and `stride` values. The `__call__` method performs the convolution operation, handling padding and strides to produce the output feature map. The `params()` method returns the kernel for optimization.
-*   **`Pooling` Base Class**: An abstract base class for pooling operations, defining common attributes like `pool_size` and `stride`.
-*   **`MaxPooling` Class**: A subclass of `Pooling` that implements max pooling. It extracts windows from the input and returns the maximum value within each window, reducing the spatial dimensions of the input.
-*   **`AvgPooling` Class**: A subclass of `Pooling` that implements average pooling. Similar to max pooling, it extracts windows but returns the average value within each window, providing a smoothed down-sampled representation.
+*   **`Convo2D`**: Supports 'valid' and 'same' padding, custom strides, and automated gradient computation for kernels.
+*   **Pooling**: Includes `MaxPooling` and `AvgPooling` for spatial down-sampling.
 
 ### `neural_net.py`
 
-This module defines the fundamental building blocks for constructing neural networks, including various layers, network architectures, regularization techniques, loss functions, and a comprehensive model training framework.
+Defines high-level components for model construction.
 
-*   **`Layer` Class**: Represents a single fully connected layer, equipped with trainable weights and biases. It supports different activation functions (e.g., `'relu'`, `'softmax'`), which can be specified as strings and dynamically called. The `params()` method provides access to its weights and biases for optimization.
-*   **`Dense` Class**: Facilitates the creation of multi-layered perceptrons by stacking multiple `Layer` instances. It allows for detailed configuration, including the number of layers, sizes of input, middle, and output layers, and distinct activation functions for hidden and final layers.
-*   **`Dropout` Class**: Implements the dropout regularization technique, a method to prevent overfitting during training. During training, it randomly sets a fraction of input units to zero at each update, while scaling up the remaining activations to maintain the expected output.
-*   **Loss Functions**: Essential for quantifying the error of a model. The module includes:
-    *   `cross_entropy_loss`: Calculates the categorical cross-entropy loss, primarily used for classification tasks.
-    *   `mse_loss`: Computes the Mean Squared Error loss, a common choice for regression problems.
-*   **`Model` Class**: Serves as the central orchestrator for the neural network training process. It takes a list of `blocks` (e.g., `Layer`, `Dense`, `Dropout` instances) to define the network's architecture. It integrates an `optimizer`, a `loss_fn`, and an optional `pen_fn` (penalty function) for regularization. The `train` method manages the entire training loop, including batching, forward passes, loss calculation, backward propagation (leveraging `autogradient`), and parameter updates via the chosen optimizer.
-*   **Penalty Functions (Regularization)**: These functions are designed to prevent overfitting by adding a penalty term to the loss function.
-    *   `l2_reg`: Implements L2 regularization (also known as weight decay), which adds a penalty proportional to the sum of the squared values of the weights.
-    *   `l1_reg`: Implements L1 regularization, which adds a penalty proportional to the sum of the absolute values of the weights.
+*   **`Layer` & `Dense`**: Fully connected layers with customizable activations.
+*   **`Dropout`**: Regularization technique to prevent overfitting by randomly zeroing activations during training.
+*   **`Model`**: The central class for training. It handles the training loop, batching, and integration with loss functions (`cross_entropy_loss`, `mse_loss`) and penalty functions (`l1_reg`, `l2_reg`).
 
-## Making and Running a Model
+### `optimizer.py`
 
-When creating a model, use the Model class, which runs most of the functions included in the package itself. The first argument is a list of layers or blocks, each element is the steps in the network. These steps can be a Dense, Layer, or Dropout blocks (more will be made), a Dense is just multiple layers stacked back to back.   
-Training a model is done through: `def train(epochs, x_t, y_t, x_v, y_v, val_run=1, l_rate=0.01, _lambda=0.1, batch_size = None) `
-Where epochs is the number of times you train through the data, the `#_t` means training data and `#_v` means validation data, `x` means input, `y` means output, `val_run` is the epochs between when you want to test the validation data, `l_rate` is the learn rate, `_lambda` is a hyperparameter that determines the strength of the penalty functions, and `batch_size` determines how large batches will be (if the batch size isn’t a multiple of the data size then it will still run, there is just a smaller batch then the others).
+Implements parameter update algorithms: `Optim_SGD`, `Optim_SGD_Momentum`, `Optim_AdaGrad`, `Optim_RMSPropclass`, and `Optim_Adam`.
+
+### `sequence.py`
+
+Provides the `Sequence` container to stack layers and manage parameter retrieval across the model.
 
 ## Dependencies
 
-The auto gradient–which is used for back propagation–relies heavily on `numpy`.
+The package relies heavily on `numpy` for numerical operations and gradient tracking.
