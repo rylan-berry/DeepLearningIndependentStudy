@@ -63,8 +63,6 @@ class Values:
     out._backward = backward
     return out
 
-
-  
   def __repr__(self):
     return "vals: " + self.vals.__repr__() + "\ngrads: "+ self.grad.__repr__()
 
@@ -102,11 +100,9 @@ class Values:
     out = Values(self.vals * other.vals)
     def backward():
       if self.grad_flag:
-        # Gradient for self is `other.vals * out.grad`
         grad_term_for_self = other.vals * out.grad
         self.grad =self.grad + Values._broadcast_grad(grad_term_for_self, self.vals.shape)
       if other.grad_flag:
-        # Gradient for other is `self.vals * out.grad`
         grad_term_for_other = self.vals * out.grad
         other.grad =other.grad + Values._broadcast_grad(grad_term_for_other, other.vals.shape)
         other._backward()
@@ -144,12 +140,12 @@ class Values:
     out = Values(self.vals @ other.vals)
     def backward():
       if self.grad_flag:
-        # out.grad @ other.vals.T matches self.vals shape, so no broadcast_grad needed here.
-        self.grad = self.grad + out.grad @  np.swapaxes(other.vals, -1, -2)
+        grad_term_self = out.grad @ np.swapaxes(other.vals, -1, -2)
+        self.grad = self.grad + Values._broadcast_grad(grad_term_self, self.vals.shape)
         
       if other.grad_flag:
-        # self.vals.T @ out.grad matches other.vals shape, so no broadcast_grad needed here.
-        other.grad = other.grad + np.swapaxes(self.vals, -1, -2) @ out.grad
+        grad_term_other = np.swapaxes(self.vals, -1, -2) @ out.grad
+        other.grad = other.grad + Values._broadcast_grad(grad_term_other, other.vals.shape)
         other._backward()
       if self.grad_flag:
         self._backward()
@@ -214,7 +210,6 @@ class Values:
     out = Values(np.abs(self.vals))
     def backward():
       if self.grad_flag:
-        # Gradient of abs(x) is np.sign(x)
         grad_term = out.grad * np.sign(self.vals)
         self.grad = self.grad + Values._broadcast_grad(grad_term, self.vals.shape)
         self._backward()
@@ -231,7 +226,6 @@ class Values:
     def backward():
         if self.grad_flag:
             grad_to_distribute = out.grad
-
             if saved_axis is not None and not saved_keepdims:
                 new_shape = list(original_shape)
                 if isinstance(saved_axis, int):
@@ -240,7 +234,6 @@ class Values:
                     for ax in saved_axis:
                         new_shape[ax] = 1
                 grad_to_distribute = grad_to_distribute.reshape(new_shape)
-
             self.grad = self.grad + Values._broadcast_grad(grad_to_distribute, self.vals.shape)
             self._backward()
     out._backward = backward
@@ -251,7 +244,6 @@ class Values:
     exp_vals = (self - max_val).exp()
     sum_exp_vals = exp_vals.sum(axis=axis, keepdims=True)
     out = Values(exp_vals / sum_exp_vals)
-
     def backward():
         if self.grad_flag:
             sum_grad_times_out = (out.vals * out.grad).sum(axis=axis, keepdims=True)
@@ -276,9 +268,6 @@ class Values:
     out = Values(np.mean(self.vals))
     def backward():
       if self.grad_flag:
-        # For mean, out.grad is a scalar. Adding a scalar to self.grad (an array)
-        # implicitly broadcasts the scalar across all elements, which is the correct behavior
-        # for the gradient of a mean operation.
         self.grad = self.grad + (out.grad / self.vals.size)
         self._backward()
     out._backward = backward
@@ -299,47 +288,31 @@ class Values:
 
   def __setitem__(self, key, value):
     value_is_values = isinstance(value, Values)
-
-    # Perform the forward assignment
     if value_is_values:
         self.vals[key] = value.vals
     else:
         self.vals[key] = value
-
-    # --- Backward logic for __setitem__ ---
     if self.grad_flag and value_is_values and value.grad_flag:
-        # Capture the current backward function of 'self'
         old_self_backward = self._backward
-        # Capture references to 'value' and 'key' for the closure
         saved_value = value
         saved_key = key
-
         def new_self_backward():
-            # When 'self' receives its gradient (self.grad), propagate the relevant part to 'saved_value'.
             grad_to_propagate = self.grad[saved_key]
             saved_value.grad = saved_value.grad + Values._broadcast_grad(grad_to_propagate, saved_value.vals.shape)
-            saved_value._backward() # Chain backward for the assigned value
-
-            # Call the original backward for 'self'
+            saved_value._backward()
             old_self_backward()
-
-        # Replace 'self's backward function with the new one
         self._backward = new_self_backward
-
 
   def backward(self):
     self.grad = np.ones_like(self.vals)
     self._backward()
 
-  
   def pad(self, padding):
     if len(padding) != len(self.vals.shape):
-      print("ERROR: padding size does not match the dims")
       return None
     out = Values(np.pad(self.vals, padding, mode='constant'))
     def backward():
       if self.grad_flag:
-      #unpad code borrowed from stackoverflow.com/questions/24806174
         slices = []
         for c in padding:
           e = None if c[1] == 0 else -c[1]
@@ -356,15 +329,10 @@ class Values:
       out = Values(self.vals.T)
       def backward():
         if self.grad_flag:
-          # out.grad is the shape of out.vals (transposed vals), so out.grad.T is the shape of self.vals.
-          # No broadcast_grad needed here.
           self.grad = self.grad + out.grad.T
           self._backward()
-        return
       out._backward = backward
       return out
-
     if hasattr(self.vals, name) and not callable(getattr(self.vals, name)):
       return getattr(self.vals, name)
-
-    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}' or attribute is not supported for automatic differentiation.")
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
