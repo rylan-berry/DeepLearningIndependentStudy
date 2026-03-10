@@ -145,10 +145,11 @@ class Values:
     def backward():
       if self.grad_flag:
         # out.grad @ other.vals.T matches self.vals shape, so no broadcast_grad needed here.
-        self.grad = self.grad + out.grad @ other.vals.T
+        self.grad = self.grad + out.grad @  np.swapaxes(other.vals, -1, -2)
+        
       if other.grad_flag:
         # self.vals.T @ out.grad matches other.vals shape, so no broadcast_grad needed here.
-        other.grad = other.grad + self.vals.T @ out.grad
+        other.grad = other.grad + np.swapaxes(self.vals, -1, -2) @ out.grad
         other._backward()
       if self.grad_flag:
         self._backward()
