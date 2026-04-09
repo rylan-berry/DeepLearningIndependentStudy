@@ -6,6 +6,8 @@ class Values:
     self.grad = np.zeros_like(vals)
     self.grad_flag = grads
 
+  def __len__(self):
+    return len(self.vals)
   #Gemini code that handles wierd broadcasting errors
   @staticmethod
   def _broadcast_grad(grad_from_output, original_shape):
