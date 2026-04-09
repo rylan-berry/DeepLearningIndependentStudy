@@ -42,6 +42,8 @@ class Embedding():
     for i in range(l_x):
       embeded[i,:]=emb[encoded[i]]
     return embeded
+  def params(self):
+    return self.embed
 
 #Modified head for multihead attention
 class AttentionHead():
