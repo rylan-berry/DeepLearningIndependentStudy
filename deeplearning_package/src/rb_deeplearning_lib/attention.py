@@ -1,6 +1,48 @@
 import numpy as np
 from .autogradient import Values 
 
+#Grouped with attention so values can be embeded.
+class Embedding():
+  def __init__(self, elements, dims, rangeE=(-1,1)):
+    elements=elements
+    len_e = len(elements)
+    self.len = len_e
+    self.encoder = {el:i for i, el in enumerate(elements)}
+    self.decoder = dict(enumerate(elements))
+    self.dims = dims # Store dims for use in __call__
+    
+    embeddings = []
+    for i in range(len_e):
+      embeddings.append(Values((rangeE[0]-rangeE[1])*np.random.rand(dims)+rangeE[1]))
+
+    self.embed = embeddings
+
+  def encode(self, x):
+    #Assuming x is an array of the elements
+    enc = self.encoder
+    out = [enc.get(el) for el in x]
+    return out
+  def decode(self, y):
+    #Assuming x is an array of keys
+    dec = self.decoder
+    out = [dec.get(key) for key in y]
+    return out
+
+  def __call__(self, x):
+    x=x
+    l_x = len(x)
+    #assumed that an integer input is already encoded
+    encoded = []
+    if isinstance(x[0],int):
+      encoded = x
+    else:
+      encoded = self.encode(x)
+    embeded = Values(np.zeros((l_x,self.dims))) 
+    emb = self.embed
+    for i in range(l_x):
+      embeded[i,:]=emb[encoded[i]]
+    return embeded
+
 #Modified head for multihead attention
 class AttentionHead():
   def __init__(self, dims1,dims2=None,rangeQ=(-1,1),rangeK=(-1,1),rangeV=(-1,1)):
