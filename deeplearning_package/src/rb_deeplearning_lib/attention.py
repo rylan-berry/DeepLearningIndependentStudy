@@ -29,7 +29,7 @@ class Embedding():
     return out
 
   def __call__(self, x):
-    x=x
+    x = x.vals if isinstance(x, Values) else x
     l_x = len(x)
     #assumed that an integer input is already encoded
     encoded = []
