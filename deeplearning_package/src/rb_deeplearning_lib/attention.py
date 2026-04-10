@@ -1,11 +1,6 @@
 import numpy as np
 from .autogradient import Values 
 
-#Grouped with attention so values can be embeded.
-import numpy as np
-from rb_deeplearning_lib import Values # Ensure Values is imported in this scope if the cell were standalone.
-                                     # It is imported in u3RHlJRyDl4U.
-
 class Embedding():
   def __init__(self, elements, dims, rangeE=(-1,1)):
     self.elements = elements # Corrected: store elements on self
@@ -32,47 +27,47 @@ class Embedding():
     return out
 
   def __call__(self, x):
-    # Ensure x_data is a numpy array for consistent handling
-    if isinstance(x, Values):
+    # Determine the actual data to process and its conceptual shape
+    elements_to_process = None
+    original_sequence_shape = None # Shape of the input *before* embedding dimension is added
+
+    if isinstance(x, str):
+      elements_to_process = list(x) # Treat string as sequence of characters
+      original_sequence_shape = (len(x),)
+      is_encoded_input = False
+    elif isinstance(x, Values):
         x_data = x.vals
-    else:
-        # Attempt to convert to numpy array. This handles lists, tuples, etc.
-        # If x is a single string like 'abcd', np.asarray('abcd') will result in a 0-dim array.
-        # If x is a list of strings ['a', 'b'], it becomes a 1-dim array.
+        original_sequence_shape = x_data.shape
+        elements_to_process = x_data.flatten()
+        # Check if elements are already integer indices
+        is_encoded_input = np.issubdtype(x_data.dtype, np.integer) or \
+                           (x_data.size > 0 and isinstance(elements_to_process[0], int))
+    else: # Handles lists, tuples, numpy arrays of elements or integers
         x_data = np.asarray(x)
-
-    # Store the original shape of the input data (before potential flattening)
-    original_input_shape = x_data.shape
-
-    # Determine if x_data contains already encoded integers or elements to be encoded
-    is_encoded_input = False
-    if np.issubdtype(x_data.dtype, np.integer):
-      is_encoded_input = True
-    elif x_data.size > 0: # Check if array is not empty
-      # Check type of first element if not clearly integer dtype
-      # Reshape to -1 to get a 1D view, then check the type of the first item.
-      if isinstance(x_data.reshape(-1)[0], int):
-          is_encoded_input = True
+        original_sequence_shape = x_data.shape
+        elements_to_process = x_data.flatten()
+        # Check if elements are already integer indices
+        is_encoded_input = np.issubdtype(x_data.dtype, np.integer) or \
+                           (x_data.size > 0 and isinstance(elements_to_process[0], int))
 
     if is_encoded_input:
-      encoded_indices_flat = x_data.flatten()
+      encoded_indices_flat = elements_to_process
     else:
-      # Flatten the input elements to pass to the encode method
-      x_elements_flat = x_data.flatten()
-      encoded_indices_flat = self.encode(x_elements_flat)
+      encoded_indices_flat = self.encode(elements_to_process)
 
-    # Now, encoded_indices_flat is a 1D numpy array of integer indices
-    # Create the output embeddings
     num_elements_flat = len(encoded_indices_flat)
     embeded_flat_vals = np.zeros((num_elements_flat, self.dims))
 
     for i in range(num_elements_flat):
-      # Access the underlying numpy array of the Values object in self.embed
-      embeded_flat_vals[i,:] = self.embed[encoded_indices_flat[i]].vals
+      current_index = encoded_indices_flat[i]
+      if current_index is None:
+          # Find the original element from elements_to_process at index i
+          element_that_failed = elements_to_process[i]
+          raise ValueError(f"Element '{element_that_failed}' not found in embedding vocabulary. "
+                           f"Vocabulary: {list(self.encoder.keys())}")
+      embeded_flat_vals[i,:] = self.embed[current_index].vals
 
-    # Reshape the flat embeddings back to the desired output shape
-    # The output shape will be (original_input_shape, self.dims)
-    output_embedding_shape = original_input_shape + (self.dims,)
+    output_embedding_shape = original_sequence_shape + (self.dims,)
     embeded = Values(embeded_flat_vals.reshape(output_embedding_shape))
 
     return embeded
