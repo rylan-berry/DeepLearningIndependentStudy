@@ -2,49 +2,84 @@ import numpy as np
 from .autogradient import Values 
 
 #Grouped with attention so values can be embeded.
+import numpy as np
+from rb_deeplearning_lib import Values # Ensure Values is imported in this scope if the cell were standalone.
+                                     # It is imported in u3RHlJRyDl4U.
+
 class Embedding():
   def __init__(self, elements, dims, rangeE=(-1,1)):
-    elements=elements
-    len_e = len(elements)
-    self.len = len_e
+    self.elements = elements # Corrected: store elements on self
+    self.len = len(elements)
     self.encoder = {el:i for i, el in enumerate(elements)}
     self.decoder = dict(enumerate(elements))
-    self.dims = dims # Store dims for use in __call__
-    
-    embeddings = []
-    for i in range(len_e):
-      embeddings.append(Values((rangeE[0]-rangeE[1])*np.random.rand(dims)+rangeE[1]))
+    self.dims = dims
 
+    embeddings = []
+    for i in range(self.len):
+      embeddings.append(Values((rangeE[0]-rangeE[1])*np.random.rand(dims)+rangeE[1]))
     self.embed = embeddings
 
-  def encode(self, x):
-    #Assuming x is an array of the elements
+  def encode(self, x_elements_flat):
+    # x_elements_flat is assumed to be a 1D iterable of elements (e.g., ['a', 'b', 'c'])
     enc = self.encoder
-    out = [enc.get(el) for el in x]
-    return out
-  def decode(self, y):
-    #Assuming x is an array of keys
+    out = [enc.get(el) for el in x_elements_flat]
+    return np.array(out) # Return a numpy array of encoded indices
+
+  def decode(self, y_indices_flat):
+    # y_indices_flat is assumed to be a 1D iterable of integer keys
     dec = self.decoder
-    out = [dec.get(key) for key in y]
+    out = [dec.get(key) for key in y_indices_flat]
     return out
 
   def __call__(self, x):
-    x = x.vals if isinstance(x, Values) else x
-    l_x = len(x)
-    #assumed that an integer input is already encoded
-    encoded = []
-    if isinstance(x[0],int):
-      encoded = x
+    # Ensure x_data is a numpy array for consistent handling
+    if isinstance(x, Values):
+        x_data = x.vals
     else:
-      encoded = self.encode(x)
-    embeded = Values(np.zeros((l_x,self.dims))) 
-    emb = self.embed
-    for i in range(l_x):
-      embeded[i,:]=emb[encoded[i]]
+        # Attempt to convert to numpy array. This handles lists, tuples, etc.
+        # If x is a single string like 'abcd', np.asarray('abcd') will result in a 0-dim array.
+        # If x is a list of strings ['a', 'b'], it becomes a 1-dim array.
+        x_data = np.asarray(x)
+
+    # Store the original shape of the input data (before potential flattening)
+    original_input_shape = x_data.shape
+
+    # Determine if x_data contains already encoded integers or elements to be encoded
+    is_encoded_input = False
+    if np.issubdtype(x_data.dtype, np.integer):
+      is_encoded_input = True
+    elif x_data.size > 0: # Check if array is not empty
+      # Check type of first element if not clearly integer dtype
+      # Reshape to -1 to get a 1D view, then check the type of the first item.
+      if isinstance(x_data.reshape(-1)[0], int):
+          is_encoded_input = True
+
+    if is_encoded_input:
+      encoded_indices_flat = x_data.flatten()
+    else:
+      # Flatten the input elements to pass to the encode method
+      x_elements_flat = x_data.flatten()
+      encoded_indices_flat = self.encode(x_elements_flat)
+
+    # Now, encoded_indices_flat is a 1D numpy array of integer indices
+    # Create the output embeddings
+    num_elements_flat = len(encoded_indices_flat)
+    embeded_flat_vals = np.zeros((num_elements_flat, self.dims))
+
+    for i in range(num_elements_flat):
+      # Access the underlying numpy array of the Values object in self.embed
+      embeded_flat_vals[i,:] = self.embed[encoded_indices_flat[i]].vals
+
+    # Reshape the flat embeddings back to the desired output shape
+    # The output shape will be (original_input_shape, self.dims)
+    output_embedding_shape = original_input_shape + (self.dims,)
+    embeded = Values(embeded_flat_vals.reshape(output_embedding_shape))
+
     return embeded
+
   def params(self):
     return self.embed
-
+    
 #Modified head for multihead attention
 class AttentionHead():
   def __init__(self, dims1,dims2=None,rangeQ=(-1,1),rangeK=(-1,1),rangeV=(-1,1)):
