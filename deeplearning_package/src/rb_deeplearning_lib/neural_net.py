@@ -22,6 +22,11 @@ class Layer:
 
   def params(self):
     return self.weights, self.bias
+
+  def set_params(self, params):
+    w, b = params
+    self.weights = w if isinstance(w, Values) else Values(w)
+    self.bias = b if isinstance(b, Values) else Values(b)
   
 class Dense:
   def __init__(self, layNum, inL, midL, outL, activ="_",f_activ="_",rangeW=(-0.1,0.1),rangeB=(-0.1,0.1)):
@@ -45,6 +50,9 @@ class Dense:
 
   def params(self):
       return self.seq.params()
+
+  def set_params(self, params):
+    self.seq.set_params(params)
 
 class Dropout:
   def __init__(self, size, chance):
@@ -103,6 +111,9 @@ class Model:
       pen_fn = emptyPenFn
     self.pen_fn = pen_fn
 
+  def set_params(self, params):
+    self.blocks.set_params(params)
+  
   def __call__(self, x):
     x_ = x if isinstance(x, Values) else Values(x)
     return self.blocks(x_)
