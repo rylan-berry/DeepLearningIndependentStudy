@@ -31,3 +31,14 @@ class Sequence:
         
 
     return all_params
+  
+  def set_params(self, params): #params assumed as list like params
+    idx = 0
+    total_params = len(params)
+    for l in self.arr:
+      if hasattr(l, 'params'):
+        n_params = len(l.params())
+        if idx+n_params > total_params:
+          raise ValueError("Too many parameters for sequence.")
+        l.set_params(params[idx:idx+n_params])
+        idx += n_params
