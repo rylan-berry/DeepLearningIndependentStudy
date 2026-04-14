@@ -11,6 +11,9 @@ class Convo2D:
     def params(self):
         return self.kernel
 
+    def set_params(self, param):
+        self.kernel = param if isinstance(param, Values) else Values(param)
+
     def __call__(self, _x):
         _x = _x if isinstance(_x, Values) else Values(_x)
         x = []
