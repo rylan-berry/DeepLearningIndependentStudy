@@ -78,6 +78,9 @@ class Embedding():
 
   def params(self):
     return self.embed
+
+  def set_params(self, param):
+    self.embed = param if isinstance(params, Values) else Values(p)
     
 #Modified head for multihead attention
 class AttentionHead():
@@ -106,6 +109,12 @@ class AttentionHead():
 
   def params(self):
     return self.w_q, self.w_k, self.w_v
+
+  def set_params(self, params):
+    q, k, v = params
+    self.w_q = q if isinstance(q, Values) else Values(q)
+    self.w_k = k if isinstance(k, Values) else Values(k)
+    self.w_v = v if isinstance(v, Values) else Values(v)
 
 #MultiHead Attention
 class AttentionMultiHead:
@@ -140,3 +149,14 @@ class AttentionMultiHead:
       all_params.extend(h.params())
     all_params.append(self.w_0)
     return all_params
+
+  def set_params(self, params):
+    idx = 0
+    for h in self.heads:
+      n_head_params = len(self.h.params()) #Should be 3 but just in case
+      h.set_params(params[idx:idx+n_head_params])
+      idx += n_head_params
+    #idx should now be the last value
+    if idx != len(params)-1:
+      raise ValueError("Mismatched set_params in MultiAttentionHead. Can't set final value.")
+    self.w_0 = params[idx] if isinstance(params[idx], Values) else Values(params[idx])
