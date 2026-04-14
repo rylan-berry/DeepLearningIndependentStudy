@@ -56,5 +56,12 @@ class FullRNNLayer:
   def params(self):
     return self.W_xh, self.W_hh, self.b_h, self.W_hy, self.b_y
 
+  def set_params(self, params):
+    wxh, whh, bh, why, by = params
+    self.W_xh = wxh if isinstance(wxh, Values) else Values(wxh)
+    self.W_hh = whh if isinstance(whh, Values) else Values(whh)
+    self.b_h = bh if isinstance(bh, Values) else Values(bh)
+    self.W_hy = why if isinstance(why, Values) else Values(why)
+    self.b_y = by if isinstance(by, Values) else Values(by)
 #I want to also make a partial RNN layer(s) so things can be changed around it -- may not do this because of time.
 #Change the output to be a Values that we can set the items of. then make the output fill that in
