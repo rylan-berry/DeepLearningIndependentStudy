@@ -49,4 +49,4 @@ class Sequence:
           if idx+1 > total_params:
             raise ValueError(f"{idx+1} is too many parameters for sequence ({total_params} params).")
           l.set_params(params[idx])
-        idx += 1
+        idx += n_params
