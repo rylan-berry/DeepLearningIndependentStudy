@@ -38,11 +38,15 @@ class Sequence:
     for l in self.arr:
       if hasattr(l, 'params'):
         lp = l.params()
-        if not(isinstance(lp, list) or isinstance(lp, tuple)):
-          lp = [lp]
-        n_params = len(lp)
-        
-        if idx+n_params > total_params:
-          raise ValueError("Too many parameters for sequence.")
-        l.set_params(params[idx:idx+n_params])
-        idx += n_params
+        n_params = 1
+        if isinstance(lp, list) or isinstance(lp, tuple)):
+          n_params = len(lp)
+          
+          if idx+n_params > total_params:
+            raise ValueError(f"{idx+n_params} is too many parameters for sequence ({total_params} params).")
+          l.set_params(params[idx:idx+n_params])
+        else:
+          if idx+1 > total_params:
+            raise ValueError(f"{idx+1} is too many parameters for sequence ({total_params} params).")
+          l.set_params(params[idx])
+        idx += 1
