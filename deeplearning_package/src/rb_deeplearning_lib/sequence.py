@@ -39,7 +39,7 @@ class Sequence:
       if hasattr(l, 'params'):
         lp = l.params()
         n_params = 1
-        if isinstance(lp, list) or isinstance(lp, tuple)):
+        if isinstance(lp, list) or isinstance(lp, tuple):
           n_params = len(lp)
           
           if idx+n_params > total_params:
