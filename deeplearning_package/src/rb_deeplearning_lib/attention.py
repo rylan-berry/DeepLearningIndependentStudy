@@ -80,7 +80,7 @@ class Embedding():
     return self.embed
 
   def set_params(self, param):
-    self.embed = param if isinstance(params, Values) else Values(p)
+    self.embed = param if isinstance(param, Values) else Values(p)
     
 #Modified head for multihead attention
 class AttentionHead():
