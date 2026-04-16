@@ -153,7 +153,7 @@ class AttentionMultiHead:
   def set_params(self, params):
     idx = 0
     for h in self.heads:
-      n_head_params = len(self.h.params()) #Should be 3 but just in case
+      n_head_params = len(h.params()) #Should be 3 but just in case
       h.set_params(params[idx:idx+n_head_params])
       idx += n_head_params
     #idx should now be the last value
