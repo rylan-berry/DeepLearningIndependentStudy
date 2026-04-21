@@ -86,3 +86,7 @@ This module provides utility functions for saving and loading model parameters, 
 ## Dependencies
 
 The package relies heavily on `numpy` for numerical operations and gradient tracking.
+
+## Version 1.0.0 Notice
+
+The addition of this updated description marks the end of the primary development of this package (and the end of my independent study course on this topic). Any 1.0.x will be simple bug fixes to this release. If I do continue to update this in the future they'll be under 1.x versions. 
