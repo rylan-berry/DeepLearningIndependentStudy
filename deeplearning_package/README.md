@@ -39,6 +39,7 @@ This module provides implementations for Recurrent Neural Networks, suitable for
 
 Implements fundamental building blocks for Convolutional Neural Networks.
 
+*   **`Reshape`**: Enables built in reshaping, uses `np.ndarray.reshape(...)`, and takes the `size` as the input. Backpropagation is enabled for it.
 *   **`Convo2D`**: Supports 2D convolution with configurable `kernel_matrix`, `padding` ('valid' or 'same'), and `stride`. It automatically calculates output dimensions and applies padding. Gradients are computed for the kernel during backpropagation.
 *   **Pooling**: Includes `MaxPooling` and `AvgPooling` classes, which perform spatial down-sampling operations with specified `pool_size` and `stride`.
 
