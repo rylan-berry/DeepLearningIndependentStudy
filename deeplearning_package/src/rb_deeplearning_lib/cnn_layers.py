@@ -2,6 +2,13 @@ from .autogradient import Values
 from math import ceil
 import numpy as np
 
+class Reshape:
+  def __init__(self, shape):
+    self.shape = shape
+  def __call__(self, x):
+    out = x.reshape(self.shape)
+    return out
+
 class Convo2D:
     def __init__(self, kernel_matrix, padding='valid', stride=1):
         self.kernel = kernel_matrix if isinstance(kernel_matrix, Values) else Values(kernel_matrix)
