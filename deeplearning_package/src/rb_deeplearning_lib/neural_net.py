@@ -2,6 +2,7 @@ from .autogradient import Values
 from .sequence import Sequence
 from .optimizer import Optimizer
 import numpy as np
+from time import time
 
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
@@ -119,6 +120,8 @@ class Model:
     return self.blocks(x_)
 
   def train(self, epochs, x_t, y_t, x_v, y_v, l_rate=0.01, val_run=1, _lambda=0.1, batch_size = None):
+    timeA = time()
+    timeB = 0
     x_trn = x_t if isinstance(x_t, Values) else Values(x_t)
     y_trn = y_t if isinstance(y_t, Values) else Values(y_t)
     x_vl = x_v if isinstance(x_v, Values) else Values(x_v)
@@ -158,7 +161,9 @@ class Model:
               l.inTrain = True
       np.random.shuffle(bat)
       for b in range(batches):
-        print(f"\rep{i}: b{b}/{batches}", end="")
+        timeB = time()
+        print(f"\rep{i}: b{b}/{batches}; t{timeB-timeA}", end="")
+        timeA = timeB
         x_train_batch = x_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
         y_train_batch = y_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
 
