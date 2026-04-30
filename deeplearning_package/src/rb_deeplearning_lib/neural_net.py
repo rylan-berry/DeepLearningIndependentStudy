@@ -121,6 +121,7 @@ class Model:
     return self.blocks(x_)
 
   def train(self, epochs, x_t, y_t, x_v, y_v, l_rate=0.01, val_run=1, _lambda=0.1, batch_size = None):
+    self.avgTime = 0
     timeA = time()
     timeB = 0
     x_trn = x_t if isinstance(x_t, Values) else Values(x_t)
@@ -165,7 +166,7 @@ class Model:
         timeB = time()
         b_t = timeB-timeA
         totalB = i*batches + b
-        self.avgTime = (totalB*self.avTime + b_t)/(totalB + 1)
+        self.avgTime = (totalB*self.avgTime + b_t)/(totalB + 1)
         eta = int(self.avgTime * (batches*(epochs - i) - b) +0.5)
         
         print(f"\rep{i}: b{b}/{batches}; t {b_t}s; eta {eta}s", end="")
