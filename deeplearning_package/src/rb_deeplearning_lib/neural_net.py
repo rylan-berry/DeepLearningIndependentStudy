@@ -3,6 +3,7 @@ from .sequence import Sequence
 from .optimizer import Optimizer
 import numpy as np
 from time import time
+from time import ctime
 
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
@@ -154,7 +155,7 @@ class Model:
               l.inTrain = False
           y_val_hat = self.__call__(x_vl)
           val_loss_value = self.loss_fn(y_vl, y_val_hat).vals
-          print(f"epoch: {i} \t loss: {val_loss_value}")
+          print(f"epoch: {i} \t loss: {val_loss_value} \t time: {ctime(time())}")
           self.val_loss.append((loss_strt+i,val_loss_value))
           for l in self.blocks.arr:
             if isinstance(l, Dropout):
@@ -198,7 +199,7 @@ class Model:
 
     y_val_hat = self.__call__(x_vl)
     val_loss_value = self.loss_fn(y_vl, y_val_hat).vals # Use loss_fn for validation too
-    print(f"epoch: {epochs} \t loss: {val_loss_value}") # Generic 'loss' instead of 'cross_entropy loss'
+    print(f"epoch: {epochs} \t loss: {val_loss_value} \t time: {ctime(time())}") # Generic 'loss' instead of 'cross_entropy loss'
     self.val_loss.append((loss_strt,val_loss_value))
 
 #penalty functions
