@@ -162,8 +162,14 @@ class Model:
       np.random.shuffle(bat)
       for b in range(batches):
         timeB = time()
-        print(f"\rep{i}: b{b}/{batches}; t{timeB-timeA}", end="")
+        b_t = timeB-timeA
+        totalB = i*batches + b
+        self.avgTime = (totalB*self.avTime + b_t)/(totalB + 1)
+        eta = int(self.avgTime * (batches*(epochs - i) - b) +0.5)
+        
+        print(f"\rep{i}: b{b}/{batches}; t {b_t}s; eta {eta}s", end="")
         timeA = timeB
+        
         x_train_batch = x_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
         y_train_batch = y_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
 
