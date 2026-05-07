@@ -5,6 +5,7 @@ class Values:
     self._backward = lambda: None
     self.grad = np.zeros_like(vals)
     self.grad_flag = grads
+    self._assignments = []
 
   def __len__(self):
     return len(self.vals)
@@ -294,16 +295,30 @@ class Values:
         self.vals[key] = value.vals
     else:
         self.vals[key] = value
+
     if self.grad_flag and value_is_values and value.grad_flag:
-        old_self_backward = self._backward
-        saved_value = value
-        saved_key = key
-        def new_self_backward():
-            grad_to_propagate = self.grad[saved_key]
-            saved_value.grad = saved_value.grad + Values._broadcast_grad(grad_to_propagate, saved_value.vals.shape)
-            saved_value._backward()
-            old_self_backward()
-        self._backward = new_self_backward
+        # Store the assignment instead of nesting functions
+        self._assignments.append((key, value))
+
+        # Define a single flat backward wrapper if not already set
+        # This replacement happens once, but the list grows iteratively
+        old_backward = self._backward
+
+        def flat_backward():
+            # 1. Handle gradients for all individual assignments stored in the list
+            # We iterate backwards to maintain correct dependency order
+            for saved_key, saved_value in reversed(self._assignments):
+                grad_to_propagate = self.grad[saved_key]
+                saved_value.grad = saved_value.grad + Values._broadcast_grad(grad_to_propagate, saved_value.vals.shape)
+                saved_value._backward()
+
+            # 2. Clear assignments to prevent double-accumulation if backward is called again
+            self._assignments = []
+
+            # 3. Call the original backward logic (e.g., from addition or multiplication)
+            old_backward()
+
+        self._backward = flat_backward
 
   def backward(self):
     self.grad = np.ones_like(self.vals)

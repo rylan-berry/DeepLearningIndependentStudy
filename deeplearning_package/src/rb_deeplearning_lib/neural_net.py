@@ -2,6 +2,8 @@ from .autogradient import Values
 from .sequence import Sequence
 from .optimizer import Optimizer
 import numpy as np
+from time import time
+from time import ctime
 
 class Layer:
   def __init__(self, input,out,activ="_",rangeW=(-1,1),rangeB=(-1,1)):
@@ -119,6 +121,9 @@ class Model:
     return self.blocks(x_)
 
   def train(self, epochs, x_t, y_t, x_v, y_v, l_rate=0.01, val_run=1, _lambda=0.1, batch_size = None):
+    self.avgTime = 0
+    timeA = time()
+    timeB = 0
     x_trn = x_t if isinstance(x_t, Values) else Values(x_t)
     y_trn = y_t if isinstance(y_t, Values) else Values(y_t)
     x_vl = x_v if isinstance(x_v, Values) else Values(x_v)
@@ -151,14 +156,22 @@ class Model:
               l.inTrain = False
           y_val_hat = self.__call__(x_vl)
           val_loss_value = self.loss_fn(y_vl, y_val_hat).vals
-          print(f"epoch: {i} \t loss: {val_loss_value}")
+          print(f"epoch: {i} \t loss: {val_loss_value} \t time: {ctime(time())}")
           self.val_loss.append((loss_strt+i,val_loss_value))
           for l in self.blocks.arr:
             if isinstance(l, Dropout):
               l.inTrain = True
       np.random.shuffle(bat)
       for b in range(batches):
-        print(f"\rep{i}: b{b}/{batches}", end="")
+        timeB = time()
+        b_t = timeB-timeA
+        totalB = i*batches + b
+        self.avgTime = (totalB*self.avgTime + b_t)/(totalB + 1)
+        eta = int(self.avgTime * (batches*(epochs - i) - b) +0.5)
+        
+        print(f"\rep{i}: b{b}/{batches}; t {b_t}s; eta {eta}s", end="")
+        timeA = timeB
+        
         x_train_batch = x_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
         y_train_batch = y_trn[bat[b]*batch_size:(bat[b]+1)*batch_size]
 
@@ -187,7 +200,7 @@ class Model:
 
     y_val_hat = self.__call__(x_vl)
     val_loss_value = self.loss_fn(y_vl, y_val_hat).vals # Use loss_fn for validation too
-    print(f"epoch: {epochs} \t loss: {val_loss_value}") # Generic 'loss' instead of 'cross_entropy loss'
+    print(f"epoch: {epochs} \t loss: {val_loss_value} \t time: {ctime(time())}") # Generic 'loss' instead of 'cross_entropy loss'
     self.val_loss.append((loss_strt,val_loss_value))
 
 #penalty functions
