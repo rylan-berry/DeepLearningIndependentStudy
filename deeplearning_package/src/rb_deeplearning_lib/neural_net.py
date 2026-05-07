@@ -158,7 +158,7 @@ class Model:
           val_loss_value = self.loss_fn(y_vl, y_val_hat).vals
           t_loss = "N/A"
           if len(self.train_loss) > 0:
-            t_loss = self.train_loss[-1]
+            t_loss = self.train_loss[-1][1]
           print(f"epoch: {i} \t train loss: {t_loss} \t val loss: {val_loss_value} \t time: {ctime(time())}")
           self.val_loss.append((loss_strt+i,val_loss_value))
           for l in self.blocks.arr:
